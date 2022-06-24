@@ -50,6 +50,4 @@ export async function loginUser(req, res) {
     }else{
         return res.sendStatus(401)
     }
-
-
 }
