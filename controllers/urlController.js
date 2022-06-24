@@ -20,14 +20,11 @@ export async function shortenUrl(req, res) {
 export async function getUrlById(req, res) {
     const { id } = req.params;
     try {
-        const urlData = await db.query(`SELECT * FROM urls WHERE id = $1`, [id])
+        const urlData = await db.query(`SELECT id, url, "shortUrl"  FROM urls WHERE id = $1`, [id])
         if(urlData.rowCount == 0) {
             return res.sendStatus(404);
         }
         const [url] = urlData.rows;
-        delete url.visitCount;
-        delete url.userId;
-        delete url.createdAt;
 
         res.send(url)
         
@@ -38,7 +35,24 @@ export async function getUrlById(req, res) {
 }
 
 export async function deleteUrl(req, res) {
-    
+    const { id } = req.params;
+    const { user } = req.locals;
+    try {
+        const urlData = await db.query(`SELECT * FROM urls WHERE id = $1`, [id])
+        if(urlData.rowCount == 0) {
+            return res.sendStatus(404);
+        }
+        const [url] = urlData.rows;
+        if(url.userId !== user.id){
+            return res.sendStatus(401);
+        }
+        await db.query(`DELETE FROM urls WHERE id=$1`, [id])
+        res.sendStatus(204);
+
+    } catch (error) {
+        console.error(error)
+        return res.sendStatus(500);
+    }
 }
 
 export async function openShortUrl(req, res) {
