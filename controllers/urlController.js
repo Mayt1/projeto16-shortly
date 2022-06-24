@@ -46,7 +46,7 @@ export async function deleteUrl(req, res) {
         if(url.userId !== user.id){
             return res.sendStatus(401);
         }
-        await db.query(`DELETE FROM urls WHERE id=$1`, [id])
+        await db.query(`DELETE * FROM urls WHERE id = $1`, [id])
         res.sendStatus(204);
 
     } catch (error) {
@@ -56,5 +56,19 @@ export async function deleteUrl(req, res) {
 }
 
 export async function openShortUrl(req, res) {
-    
+    const { shortUrl } = req.params;
+    try {
+        const shortUrlData = await db.query(`SELECT * FROM urls WHERE "shortUrl" = $1`, [shortUrl])
+        
+        if(shortUrlData.rowCount == 0) {
+            return res.sendStatus(404);
+        }
+        const [urlShort] = shortUrlData.rows;
+        await db.query(`UPDATE urls SET "visitCount" = "visitCount" + 1 WHERE id = $1`, [urlShort.id])
+        res.redirect(`https://${urlShort.urls}`);
+
+    } catch (error) {
+        console.error(error)
+        return res.sendStatus(500);
+    }
 }
