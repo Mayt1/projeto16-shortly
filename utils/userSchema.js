@@ -7,4 +7,4 @@ const userSchema = joi.object({
     confirmPassword: joi.ref("password")
 });
 
-export default userSchema
+export default userSchema;
